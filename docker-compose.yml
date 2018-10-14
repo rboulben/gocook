@@ -1,0 +1,29 @@
+version: "3.3"
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      args:
+        version: 0.1
+    volumes:
+      - ./nginx/etc:/etc/nginx/conf.d
+  php:
+    build:
+      context: ./php
+      args:
+        version: 0.1
+    volumes:
+      - ./php/src:/var/www/gocook
+  mysql:
+    build:
+      context: ./mysql
+      args:
+        version: 0.1
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=true
+      - MYSQL_DATABASE=gocook
+      - MYSQL_USER=gocook
+      - MYSQL_PASSWORD=test

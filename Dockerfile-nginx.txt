@@ -1,0 +1,44 @@
+FROM nginx:1.13.11-alpine as base
+
+WORKDIR /var/www
+
+ARG version
+ARG target
+LABEL com.hexaglobe.description "Live-event nginx with front"
+LABEL com.hexaglobe.version $version
+LABEL com.hexaglobe.target $target
+
+###> builder ###
+FROM node:10-alpine as builder
+COPY /src/live-event-front/package.json /src/live-event-front/package-lock.json ./
+
+## Storing node modules on a separate layer will prevent unnecessary npm installs at each build
+RUN npm i && mkdir /ng-app && cp -R ./node_modules ./ng-app
+WORKDIR /ng-app
+COPY /src/live-event-front .
+
+# TODO : use a build argument or something else to allow build in dev environment
+## Build the angular app in production mode and store the artifacts in dist folder
+RUN $(npm bin)/ng build ---prod
+###< end builder ###
+
+
+###> dev image only ###
+FROM base as dev
+
+## From ‘builder’ stage copy over the artifacts in dist folder to default nginx public folder
+COPY --from=builder /ng-app/dist /var/www/dist
+## copy static files which are used as box html overlays
+COPY /src/boxes /var/www/boxes
+
+###< dev image only ###
+
+###> prod image only ###
+FROM base as prod
+
+## From ‘builder’ stage copy over the artifacts in dist folder to default nginx public folder
+COPY --from=builder /ng-app/dist /var/www/dist
+## copy static files which are used as box html overlays
+COPY /src/boxes /var/www/boxes
+
+###< prod image only ###

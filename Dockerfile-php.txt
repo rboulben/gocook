@@ -1,0 +1,101 @@
+FROM alpine:3.6 as base
+
+
+ENV TIMEZONE UTC
+ENV PHP_VER  7
+ENV SYMFONY__CONFIG__PATH /home/hexaglobe/config/config.yml
+
+RUN apk add --no-cache \
+        php"$PHP_VER" \
+        php"$PHP_VER"-mysqli \
+	    php"$PHP_VER"-fpm \
+        php"$PHP_VER"-mbstring \
+        php"$PHP_VER"-sockets \
+        php"$PHP_VER"-xdebug \
+        php"$PHP_VER"-intl \
+        php"$PHP_VER"-mysqli \
+        php"$PHP_VER"-curl \
+        php"$PHP_VER"-ftp \
+        php"$PHP_VER"-session \
+        php"$PHP_VER"-gd \
+        php"$PHP_VER"-json \
+        php"$PHP_VER"-ctype \
+        php"$PHP_VER"-xml \
+        php"$PHP_VER"-dom \
+        php"$PHP_VER"-iconv \
+        php"$PHP_VER"-pdo \
+        php"$PHP_VER"-pdo_mysql \
+        php"$PHP_VER"-openssl \
+        php"$PHP_VER"-phar \
+        php"$PHP_VER"-zlib \
+        php"$PHP_VER"-bcmath \
+        php"$PHP_VER"-tokenizer \
+        php"$PHP_VER"-simplexml \
+        php"$PHP_VER"-fileinfo \
+        openssh-client \
+        postfix \
+        ffmpeg \
+        openssl \
+        ca-certificates
+
+RUN echo "${TIMEZONE}" > /etc/timezone \
+    && sed -i "s|;*daemonize\s*=\s*yes|daemonize = no|g" /etc/php7/php-fpm.conf \
+    && sed -i "s|;*listen\s*=\s*127.0.0.1:9000|listen = 9000|g" /etc/php7/php-fpm.d/www.conf \
+    && sed -i "s|;*listen\s*=\s*/||g" /etc/php7/php-fpm.d/www.conf \
+    && sed -i "s|;*date.timezone =.*|date.timezone = ${TIMEZONE}|i" /etc/php7/php.ini \
+    && export PHP_UPLOAD_MAX_FILESIZE="2G" \
+    && export PHP_MAX_POST="2G" \
+    && sed -i "s|;*upload_max_filesize =.*|upload_max_filesize = ${PHP_UPLOAD_MAX_FILESIZE}|i" /etc/php7/php.ini \
+    && sed -i "s|;*post_max_size =.*|post_max_size = ${PHP_MAX_POST}|i" /etc/php7/php.ini \
+    && echo 'env[SYMFONY__CONFIG__PATH] = $SYMFONY__CONFIG__PATH' >> /etc/php7/php-fpm.d/www.conf
+
+
+#Cron for publication
+ADD etc/cron.d/cron_publication_status /etc/cron.d/cron_publication_status
+
+COPY ./bin/ide-phpinfo.php /tmp/
+
+WORKDIR /var/www/advr
+
+CMD ["/home/hexaglobe/bin/start.sh"]
+
+ARG version
+ARG target
+LABEL com.advr.version $version
+LABEL com.advr.target $target
+
+FROM base as dev
+
+ENV SYMFONY_ENV dev
+
+COPY ./bin/xdebug_config.sh /tmp/xdebug_config.sh
+RUN apk add --no-cache php7-xdebug
+RUN /tmp/xdebug_config.sh
+
+
+FROM docker.hexaglobe.com/ljenkins/alpine-php-composer:latest as composer
+
+RUN apk add --no-cache openssh-client \
+                       git
+COPY src/composer.json /composer.json
+#COPY src/composer.lock /composer.lock
+COPY .ssh/id_rsa /etc/configs/id_rsa
+COPY bin/pull_hexa_vendor.sh /tmp/pull_hexa_vendor.sh
+
+RUN mkdir ~/.ssh \
+    && ssh-keyscan -H phabricat0r.hexaglobe.com >> ~/.ssh/known_hosts \
+    && eval $(ssh-agent -s) \
+    && ssh-add /etc/configs/id_rsa \
+    && php -d memory_limit=-1 /usr/local/bin/composer install --ignore-platform-reqs --no-scripts
+#    && /tmp/pull_hexa_vendor.sh
+
+#     && composer install --ignore-platform-reqs --no-scripts \
+
+FROM base as prod
+
+ENV SYMFONY_ENV prod
+
+COPY bin /home/hexaglobe/bin
+COPY src /var/www/advr
+COPY --from=composer /vendor /var/www/advr/vendor
+COPY --from=composer /usr/local/bin/composer /usr/local/bin/composer
