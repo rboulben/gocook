@@ -20,6 +20,8 @@ services:
       context: ./mysql
       args:
         version: 0.1
+    ports:
+      - 3306:3306     
     volumes:
       - ./mysql/data:/var/lib/mysql
     environment:
