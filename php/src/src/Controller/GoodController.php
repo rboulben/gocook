@@ -12,6 +12,8 @@ namespace App\Controller;
 use App\Entity\Good;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Request\ParamFetcherInterface;
+use Pagerfanta\Pagerfanta;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,8 +37,19 @@ class GoodController extends FOSRestController
         return $good;
     }
 
+//    public function listOldAction($order, $search)
+//    {
+//        return $order;
+//    }
+
     /**
      * @Rest\Get("/goods", name="app_good_list")
+     * @Rest\QueryParam(
+     *     name="filter",
+     *     requirements="[a-zA-Z0-9]",
+     *     nullable=true,
+     *     description="The keyword to search for."
+     * )
      * @Rest\QueryParam(
      *     name="order",
      *     requirements="asc|desc",
@@ -44,16 +57,31 @@ class GoodController extends FOSRestController
      *     description="Sort order (asc or desc)"
      * )
      * @Rest\QueryParam(
-     *     name="search",
-     *     requirements="[a-zA-Z0-9]",
-     *     default=null,
-     *     nullable=true,
-     *     description="Search query to look for $good"
+     *     name="limit",
+     *     requirements="\d+",
+     *     default="20",
+     *     description="Max number of goods per page."
      * )
+     * @Rest\QueryParam(
+     *     name="offset",
+     *     requirements="\d+",
+     *     default="1",
+     *     description="The pagination offset"
+     * )
+     * @Rest\View()
      */
-    public function listAction($order, $search)
+    public function listAction(ParamFetcherInterface $paramFetcher)
     {
-        return $order;
+        /** @var Pagerfanta $pager */
+//        return             $paramFetcher->get('limit');
+        $pager = $this->getDoctrine()->getRepository('App:Good')->search(
+            $paramFetcher->get('filter'),
+            $paramFetcher->get('order'),
+            $paramFetcher->get('limit'),
+            $paramFetcher->get('offset')
+        );
+
+        return $pager->getCurrentPageResults();
     }
 
     /**
