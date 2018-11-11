@@ -51,4 +51,64 @@ class Meal
      * @ORM\Column(type="boolean")
      */
     private $consomed = false;
+
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getDate()
+    {
+        return $this->date;
+    }
+
+    public function setDate(\DateTime $date): void
+    {
+        $this->date = $date;
+    }
+
+    public function isConsomed(): bool
+    {
+        return $this->consomed;
+    }
+
+    public function setConsomed(bool $consomed): void
+    {
+        $this->consomed = $consomed;
+    }
+
+    public function getMainCourse()
+    {
+        return $this->mainCourse;
+    }
+
+    public function setMainCourse($mainCourse): void
+    {
+        $this->mainCourse = $mainCourse;
+    }
+
+    public function getEntry()
+    {
+        return $this->entry;
+    }
+
+    public function setEntry($entry): void
+    {
+        $this->entry = $entry;
+    }
+
+    public function getDesert()
+    {
+        return $this->desert;
+    }
+
+    public function setDesert($desert): void
+    {
+        $this->desert = $desert;
+    }
+
+
+
+
 }

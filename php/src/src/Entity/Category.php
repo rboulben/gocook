@@ -31,13 +31,51 @@ class Category
     private $name;
 
     /**
-     * @ORM\OneToMany(targetEntity="Good", mappedBy="category")
+     * @ORM\OneToMany(targetEntity="Good", mappedBy="category", cascade={"persist"})
      */
     private $goods;
 
     public function __construct()
     {
-        $this->$goods = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->goods = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function setName($name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getGoods() : ArrayCollection
+    {
+        return $this->goods;
+    }
+
+    public function setGoods(ArrayCollection $goods): void
+    {
+        $this->goods = $goods;
+    }
+
+    public function addGood(Good $good) : void
+    {
+        if ($this->goods->contains($good)) {
+            return;
+        }
+        $this->goods[] = $good;
+    }
+
+    public function removeGood(Good $good) : void
+    {
+        $this->goods->removeElement($good);
     }
 
 }

@@ -35,10 +35,49 @@ class Ingredient
      * @ORM\ManyToOne(targetEntity="Good", inversedBy="ingredients")
      * @ORM\JoinColumn(name="good_id", referencedColumnName="id")
      */
-    private $goods;
+    private $good;
 
     /**
+     * @var int
      * @ORM\Column(type="integer")
      */
     private $quantity;
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getQuantity()
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity($quantity): void
+    {
+        $this->quantity = $quantity;
+    }
+
+    public function getRecipe()
+    {
+        return $this->recipe;
+    }
+
+    public function setRecipe(Recipe $recipe): void
+    {
+        $this->recipe = $recipe;
+    }
+
+    public function getGood()
+    {
+        return $this->good;
+    }
+
+    public function setGood(Good $good): void
+    {
+        $this->good = $good;
+    }
+
+
+
 }

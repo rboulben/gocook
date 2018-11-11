@@ -51,4 +51,61 @@ class Entry
      * @ORM\Column(type="integer")
      */
     private $consomedQuantity;
+
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getDate()
+    {
+        return $this->date;
+    }
+
+    public function setDate(\DateTime $date): void
+    {
+        $this->date = $date;
+    }
+
+    public function getQuantity()
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(int $quantity): void
+    {
+        $this->quantity = $quantity;
+    }
+
+    public function getConsomedQuantity()
+    {
+        return $this->consomedQuantity;
+    }
+
+    public function setConsomedQuantity(int $consomedQuantity): void
+    {
+        $this->consomedQuantity = $consomedQuantity;
+    }
+
+    public function getGood()
+    {
+        return $this->good;
+    }
+
+    public function setGood(Good $good): void
+    {
+        $this->good = $good;
+    }
+
+    public function getStock()
+    {
+        return $this->stock;
+    }
+
+    public function setStock(Stock $stock): void
+    {
+        $this->stock = $stock;
+    }
+
 }
