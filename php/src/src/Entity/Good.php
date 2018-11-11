@@ -10,7 +10,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity()
@@ -25,7 +25,8 @@ class Good
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255, unique=true)
+     * @ORM\Column(type="string", length=255, unique=true, nullable=false)
+     * @Assert\NotBlank(groups={"Create"})
      */
     private $name;
 
@@ -39,13 +40,12 @@ class Good
     /**
      * @var integer
      *
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $durabilityDays;
 
     /**
-     * @ORM\Column(type="string", length=25)
-     * TODO maybe typing
+     * @ORM\Column(type="string", length=25, nullable=true)
      */
     private $unit;
 
@@ -70,7 +70,7 @@ class Good
     /**
      * @var integer
      * Quantity in unit/day, removed from the stock
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $dailyConsomption = 0;
 
@@ -129,7 +129,7 @@ class Good
         $this->dailyConsomption = $dailyConsomption;
     }
 
-    public function getEntries() : ArrayCollection
+    public function getEntries()
     {
         return $this->entries;
     }
@@ -152,7 +152,7 @@ class Good
         $this->entries->removeElement($entry);
     }
 
-    public function getWithdrawals() : ArrayCollection
+    public function getWithdrawals()
     {
         return $this->withdrawals;
     }
@@ -175,7 +175,7 @@ class Good
         $this->withdrawals->removeElement($withdrawal);
     }
 
-    public function getIngredients() : ArrayCollection
+    public function getIngredients()
     {
         return $this->ingredients;
     }

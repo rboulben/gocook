@@ -49,7 +49,7 @@ class Stock
         return $this->id;
     }
 
-    public function getEntries() : ArrayCollection
+    public function getEntries()
     {
         return $this->entries;
     }
@@ -72,7 +72,7 @@ class Stock
         $this->entries->removeElement($entry);
     }
 
-    public function getWithdrawals() : ArrayCollection
+    public function getWithdrawals()
     {
         return $this->withdrawals;
     }

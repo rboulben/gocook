@@ -14,8 +14,8 @@ framework:
     php_errors:
         log: true
     translator: ~
-#    templating:
-#        engines: ['php']
+    templating:
+        engines: ['twig']
 
     cache:
         # Put the unique name of your app here: the prefix seed

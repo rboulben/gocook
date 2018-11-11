@@ -17,10 +17,13 @@
         "symfony/console": "*",
         "symfony/flex": "^1.1",
         "symfony/framework-bundle": "*",
+        "symfony/options-resolver": "*",
         "symfony/security-bundle": "*",
         "symfony/serializer": "*",
         "symfony/swiftmailer-bundle": "^3.2",
         "symfony/translation": "*",
+        "symfony/twig-bundle": "*",
+        "symfony/validator": "*",
         "symfony/yaml": "*"
     },
     "require-dev": {

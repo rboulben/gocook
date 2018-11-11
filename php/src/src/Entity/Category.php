@@ -55,7 +55,7 @@ class Category
         $this->name = $name;
     }
 
-    public function getGoods() : ArrayCollection
+    public function getGoods()
     {
         return $this->goods;
     }
