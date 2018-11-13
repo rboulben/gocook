@@ -35,3 +35,10 @@ services:
     # https://github.com/FriendsOfSymfony/FOSRestBundle/issues/1768
 #    sensio_framework_extra.view.listener:
 #        alias: Sensio\Bundle\FrameworkExtraBundle\EventListener\TemplateListener
+
+    entity_normalizer:
+        class: App\SupportClasses\EntityNormalizer
+        public: false
+        autowire: true
+        autoconfigure: true
+        tags: [serializer.normalizer]

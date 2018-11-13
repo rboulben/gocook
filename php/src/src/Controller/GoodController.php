@@ -16,8 +16,13 @@ use FOS\RestBundle\Request\ParamFetcherInterface;
 use Pagerfanta\Pagerfanta;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Validator\ConstraintViolationList;
 
 class GoodController extends FOSRestController
@@ -37,16 +42,11 @@ class GoodController extends FOSRestController
         return $good;
     }
 
-//    public function listOldAction($order, $search)
-//    {
-//        return $order;
-//    }
-
     /**
      * @Rest\Get("/goods", name="app_good_list")
      * @Rest\QueryParam(
      *     name="filter",
-     *     requirements="[a-zA-Z0-9]",
+     *     requirements="[a-zA-Z0-9]+",
      *     nullable=true,
      *     description="The keyword to search for."
      * )
@@ -73,7 +73,6 @@ class GoodController extends FOSRestController
     public function listAction(ParamFetcherInterface $paramFetcher)
     {
         /** @var Pagerfanta $pager */
-//        return             $paramFetcher->get('limit');
         $pager = $this->getDoctrine()->getRepository('App:Good')->search(
             $paramFetcher->get('filter'),
             $paramFetcher->get('order'),
@@ -82,6 +81,18 @@ class GoodController extends FOSRestController
         );
 
         return $pager->getCurrentPageResults();
+    }
+
+    /**
+     * @Rest\Post("/goods/test")
+     * @Rest\View
+     */
+    public function testAction(Request $request)
+    {
+        $data = $request->getContent();
+        $object = $this->get('serializer')->deserialize($data, Good::class, 'json');
+                return $object->getCategory()->getId(); // 'foo'
+
     }
 
     /**
@@ -98,7 +109,6 @@ class GoodController extends FOSRestController
             return $this->view($violations, Response::HTTP_BAD_REQUEST);
         }
 
-
         $em = $this->getDoctrine()->getManager();
         $em->persist($good);
         $em->flush();
@@ -107,10 +117,63 @@ class GoodController extends FOSRestController
             $good,
             Response::HTTP_CREATED,
             [ 'Location' => $this->generateUrl(
-                    'app_good_show',
-                    ['id' => $good->getId(), UrlGeneratorInterface::ABSOLUTE_URL]
-               )
+                'app_good_show',
+                ['id' => $good->getId(), UrlGeneratorInterface::ABSOLUTE_URL]
+            )
             ]
+        );
+    }
+
+
+    /**
+     * @Rest\Patch("/goods/{id}")
+     * @Rest\View
+     * @ParamConverter("toMerge", converter="fos_rest.request_body",
+     *      options={
+     *         "validator"={ "groups"="Create" }
+     *     })
+     */
+    public function updateAction(int $id, Good $toMerge, ConstraintViolationList $violations)
+    {
+        if (count($violations)) {
+            return $this->view($violations, Response::HTTP_BAD_REQUEST);
+        }
+        $good = $this->getDoctrine()->getRepository('App:Good')->find($id);
+        if (!$good) {
+            throw new NotFoundHttpException();
+        }
+
+        $toMerge->setId($id);
+        $em = $this->getDoctrine()->getManager();
+        $em->merge($toMerge);
+        $em->flush();
+
+        return $this->view(
+            $toMerge,
+            Response::HTTP_OK,
+            [ 'Location' => $this->generateUrl(
+                'app_good_show',
+                ['id' => $toMerge->getId(), UrlGeneratorInterface::ABSOLUTE_URL]
+            )
+            ]
+        );
+    }
+
+    /**
+     * @Rest\Delete("/goods/{id}")
+     * @Rest\View
+     */
+    public function deleteAction(int $id)
+    {
+        $good = $this->getDoctrine()->getRepository('App:Good')->find($id);
+
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($good);
+        $em->flush();
+
+        return $this->view(
+            $good,
+            Response::HTTP_OK
         );
     }
 }

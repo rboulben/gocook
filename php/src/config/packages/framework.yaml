@@ -33,3 +33,5 @@ framework:
         #app: cache.adapter.apcu
     serializer:
         enabled: true
+    property_info:
+        enabled: false

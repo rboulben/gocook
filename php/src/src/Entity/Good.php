@@ -28,14 +28,7 @@ class Good
      * @ORM\Column(type="string", length=255, unique=true, nullable=false)
      * @Assert\NotBlank(groups={"Create"})
      */
-    private $name;
-
-    /**
-     * Many Features have One Product.
-     * @ORM\ManyToOne(targetEntity="Category", inversedBy="goods")
-     * @ORM\JoinColumn(name="category_id", referencedColumnName="id")
-     */
-    private $product;
+    public $name;
 
     /**
      * @var integer
@@ -43,6 +36,14 @@ class Good
      * @ORM\Column(type="integer", nullable=true)
      */
     private $durabilityDays;
+
+    /**
+     * Many Features have One Product.
+     * @ORM\ManyToOne(targetEntity="Category", inversedBy="goods")
+     * @ORM\JoinColumn(name="category_id", referencedColumnName="id")
+     * @var Category
+     */
+    public $category;
 
     /**
      * @ORM\Column(type="string", length=25, nullable=true)
@@ -81,12 +82,16 @@ class Good
         $this->ingredients = new \Doctrine\Common\Collections\ArrayCollection();
         $this->entries = new \Doctrine\Common\Collections\ArrayCollection();
         $this->withdrawals = new \Doctrine\Common\Collections\ArrayCollection();
-
     }
 
     public function getId()
     {
         return $this->id;
+    }
+
+    public function setId($id): void
+    {
+        $this->id = $id;
     }
 
     public function getName()
@@ -117,6 +122,16 @@ class Good
     public function setUnit($unit): void
     {
         $this->unit = $unit;
+    }
+
+    public function getCategory()
+    {
+        return $this->category;
+    }
+
+    public function setCategory(Category $category): void
+    {
+        $this->category = $category;
     }
 
     public function getDailyConsomption()
